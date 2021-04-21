@@ -691,6 +691,24 @@ end
 
 describe AutoForme do
   before(:all) do
+    db_setup(:artists=>[[:name, :string]])
+    model_setup(:Artist=>[:artists])
+  end
+  after(:all) do
+    Object.send(:remove_const, :Artist)
+  end
+  it "should support specifying name_method for regular column" do
+    app_setup(Artist) do
+      column_options :name => {:name_method => proc { |obj| obj.name.upcase }}
+    end
+    Artist.create(name: "test artist")
+    visit "/Artist/browse"
+    page.first("tr td:first-child").text.must_equal "TEST ARTIST"
+  end
+end
+
+describe AutoForme do
+  before(:all) do
     db_setup(:artists=>(0..5).map{|i|[:"n#{i}", :string]})
     model_setup(:Artist=>[:artists])
     class Artist

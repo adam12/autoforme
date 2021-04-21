@@ -251,14 +251,26 @@ module AutoForme
     def column_value(type, request, obj, column)
       v = obj.send(column)
       return if v.nil?
+
+      opts = column_options_for(type, request, column) 
+      nm = opts[:name_method]
+
       if association?(column) 
-        opts = column_options_for(type, request, column) 
-        case nm = opts[:name_method]
+        case nm
         when Symbol, String
           v = v.send(nm)
         when nil
         else
           v = nm.call(v)
+        end
+      else
+        case nm
+        when Symbol, String
+          v = obj.send(nm)
+        when nil
+          v = obj.send(column)
+        else
+          v = nm.call(obj)
         end
       end
       if v.is_a?(base_class)
